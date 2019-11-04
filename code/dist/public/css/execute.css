@@ -1,0 +1,48 @@
+.close{ display: none; }
+
+.color-red{ color: #ff0618; }
+.color-white{ color: #fff; }
+.color-grey{ color: #9d9d9d; }
+.color-black{ color: #000; }
+.color-green{ color: #149614; }
+.color-blue{ color: #09c; }
+.bg-orange{ background-color: #fbb10b; }
+.bg-green{ background-color: #149614; }
+.bg-grey{ background-color: #9d9d9d; }
+.br-60{ border-radius: 60%; }
+.txt-c{ text-align: center; }
+.txt-l{ text-align: left; }
+.txt-r{ text-align: right; }
+/*字号大小*/
+.font-size-08{ font-size: .8rem; }
+.font-size-09{ font-size: .9rem; }
+.font-size-1{ font-size: 1rem; }
+.font-size-11{ font-size: 1.1rem; }
+.font-size-12{ font-size: 1.2rem; }
+.font-size-13{ font-size: 1.3rem; }
+
+/*外边距*/
+.mart-02{ margin-top: 0.2rem; }
+.mart-03{ margin-top: 0.3rem; }
+.mart-05{ margin-top: 0.5rem; }
+
+/*内边距*/
+.pad-03{ padding: .3rem; }
+
+.padl-02{ padding-left: .2rem; }
+.padl-03{ padding-left: .3rem; }
+.padl-04{ padding-left: .4rem; }
+.padl-05{ padding-left: .5rem; }
+
+#searchBar{ height: 2.8rem; }
+
+.weui-cells{ border: 1px solid #999; width: 94%; margin: .5rem auto 0 auto; }
+.weui-cell{ align-items: flex-start; padding: 8px 15px; }
+.weui-cell.noFlex .weui-cell__ft{ flex: 3; -webkit-flex: 3; }
+.weui-cell.noborder{ padding-top: 0; }
+.weui-cell.noborder:before{ border-color: transparent; }
+.weui-cell:before{ right: 15px; border-color: #969292; }
+.weui-cell .weui-cell__ft{ flex: 2; -webkit-flex: 2; }
+.weui-cell_access .weui-cell__ft:after{ margin-top: 7px; right: 7px; }
+
+.item-title p > span{ color: #999; }z

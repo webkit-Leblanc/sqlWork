@@ -1,0 +1,42 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": [
+            "last 2 version",
+            "last 2 years"
+          ]
+        }
+      }
+    ],
+    "react",
+    "stage-0"
+  ],
+  "plugins": [
+    [
+      "import",
+      [
+        {
+          "libraryName": "antd",
+          "style": "css"
+        },
+        {
+          "libraryName": "antd-mobile",
+          "style": "css"
+        }
+      ]
+    ],
+    [
+      "transform-runtime",
+      {
+        "helpers": false,
+        "polyfill": false,
+        "regenerator": true,
+        "moduleName": "babel-runtime"
+      }
+    ],
+    "imext"
+  ]
+}
