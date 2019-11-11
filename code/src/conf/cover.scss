@@ -323,3 +323,9 @@ body {
   border-color: #95393c;
 }
 
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
