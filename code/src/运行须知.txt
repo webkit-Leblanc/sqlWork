@@ -1,0 +1,8 @@
+1、电脑下载以及安装安装node.js，官网地址：https://nodejs.org/en/  	
+     为确保安装成功，打开命令行程序，执行口令：node -v或者npm -v 出现版本号，即为安装成功
+2、全局安装cnpm: 打开命令行程序，执行 npm install -g cnpm --registry=https://registry.npm.taobao.org
+     直直安装完毕
+3、在package.json文件所在层，执行：cnpm install 等待安装完毕，目录出现node_modules文件夹
+4、切换到code目录： cd code
+5、执行编译命令：npm run test，等待文件编译，浏览器会自动打开访问链接
+6、打包命令：npm run dist, 在code文件夹里，会出现dist文件，将其文件引用到你们工程即可

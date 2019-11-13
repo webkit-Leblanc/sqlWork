@@ -1,7 +1,7 @@
 import React from 'react';
 
 // import { Layout, Card, Modal } from 'antd';
-import { Layout, Icon, Button, Input } from 'antd';
+import { Layout, Icon, Button, Input, Row, Table } from 'antd';
 const { Sider } = Layout;
 const { TextArea } = Input;
 import TreeView from '../../component/TreeView';
@@ -12,6 +12,7 @@ import EditableConcatIdFormView from '../../component/EditableConcatIdFormView';
 
 import Fetch from '../../fetch';
 import './index.scss';
+import ListBodyWrapper from 'antd/lib/transfer/renderListBody';
 
 
 export default class Index extends React.Component {
@@ -24,11 +25,18 @@ export default class Index extends React.Component {
 
       tableDataList: [],  //表列表集合数组
       formDataSource: [{ key: Date.now() }],  //条件数组
-      concatDataSource: [{ key: Date.now()}], //联合关系数组  
+      concatDataSource: [{ key: Date.now() }], //联合关系数组  
       treeData: [],
 
-      leftorRightTableList: [],
-      // rightTableList: []
+      renderLoading1: false,
+      renderLoading2: false,
+      renderLoading3: false,
+
+      currentStatus: '',
+      sqlWord: '',
+
+      columns: []
+
 
     };
   }
@@ -69,79 +77,106 @@ export default class Index extends React.Component {
     })
   }
 
-  render() {
-    const { selectedKeysList, treeData } = this.state;
-    let obj = {
-      "selectFields": [
-        {
-          "tableId": "1",
-          "fields": [
-            {
-              "fieldName": "",
-              "aggrFunc": ""
-            },
-            {
-              "fieldName": "",
-              "aggrFunc": ""
-            }
-          ]
-        },
-        {
+  handleClick = (key) => {
+    let { tableDataList, formDataSource, concatDataSource, selectedKeysList } = this.state;
+    this.setState({ currentStatus: key }); //
 
-        },
-        {
+    let selectFields = tableDataList.length && tableDataList.map(({ id, logSampleId, data }) => ({
+      tableId: logSampleId,
+      fields: data.filter(({ checked }) => (checked)).map(({ fieldName, aggrFunc }) => ({ fieldName, aggrFunc }))
+    }));
 
+    let joinRelationship = concatDataSource.length && concatDataSource.map(({
+      leftJoinField,
+      leftTableId,
+      rightJoinField,
+      rightTableId
+    }) => ({
+      leftJoinField,
+      leftTableId,
+      rightJoinField,
+      rightTableId,
+      leftTableName: selectedKeysList.find(({ id }) => (id == leftTableId)) && selectedKeysList.find(({ id }) => (id == leftTableId)).name,
+      rightTableName: selectedKeysList.find(({ id }) => (id == leftTableId)) && selectedKeysList.find(({ id }) => (id == leftTableId)).name,
+    }));
+
+    let whereCondition = formDataSource.filter(({ checked }) => (checked)).map(({ fieldName, desc, judge, value, sort, sortType, group, sourceTableId }) => ({
+      fieldName, desc, sort, sortType, group,sourceTableId,
+      condition: {
+        judge, value,
+      }
+    }));
+    console.log(joinRelationship, whereCondition, selectFields);
+
+    switch (key) {
+      case 'renderSql':
+        console.log('renderSql');
+        this.setState({
+          renderLoading1: true
+        })
+        Fetch.getDynamicSql({
+          joinRelationship: JSON.stringify(joinRelationship) == '[{}]' ? [] : joinRelationship, whereCondition, selectFields
+        }).then(res => {
+          console.log('res', res);
+          this.setState({
+            sqlWord: res.data,
+            renderLoading1: false
+          })
+        })
+        return;
+      case 'renderSearch':
+        console.log('执行查询');
+        this.setState({
+          renderLoading2: true
+        });
+        if (!this.state.sqlWord) {
+          layer.msg('查询语句为空，无法查询！');
+          this.setState({
+            renderLoading2: false
+          });
+          return;
+        } else {
+          return Fetch.getDynamicSqlDataList({
+            sql: this.state.sqlWord
+          }).then(res => {
+       
+            console.log('res', res);
+            if( res.status == 200) {
+              layer.msy('执行查询成功！');
+              this.setState({
+                columns: res.data.columnNames.split(',').map((a)=>({
+                  title: a,
+                  dataIndex: a
+                })),
+                dataSource: res.data.data,
+                renderLoading2: false
+              })
+            }else{
+              layer.msg('执行查询出错，请稍后重试！')
+              this.setState({
+                renderLoading2: false
+              });
+            }       
+          })
+ 
         }
-      ],
-      "joinRelationship": [
-        {
-          "leftTableId": "1",
-          "leftTableName": "t1",
-          "leftJoinField": "no",
-          "rightTableId": "2",
-          "rightTableName": "t2",
-          "rightJoinField": "no"
-        }
-
-      ],
-      "whereCondition": [
-        {
-          "fieldName": "age",
-          "desc": "年龄",
-          "condition": {
-            "judge": "3",
-            "value": "18"
-          },
-          "sort": "1",
-          "sortType": "",
-          "group": "1"
-        },
-        {
-          "fieldName": "sex",
-          "desc": "性别",
-          "condition": {
-
-          },
-          "sort": "",
-          "sortType": "",
-          "group": ""
-        }
-      ]
-
+      case 'renderResult':
+        console.log('保存结果');
+        return;
     }
+  }
 
-    console.log('obj', obj);
+  render() {
+    const { selectedKeysList, treeData, currentStatus, columns, dataSource } = this.state;
 
     return (
 
-
       <React.Fragment>
-
-        <Layout style={{ height: '100vh', overflow: 'scroll' }}>
+        <Layout style={{ height: '100%', overflow: 'scroll' }}>
           <Sider style={{ overflow: 'scroll' }}>
             <TreeView treeData={treeData} setSelectedKeysList={this.setSelectedKeysList} {...this.state} />
           </Sider>
-          <Layout>
+          <Layout style={{ height: '100%', overflow: 'scroll', padding: 10 }}>
             <div className="index-content-flex">
               <div className="index-content-top" >
                 <TableListView {...this.state} key={selectedKeysList.join(',')} setTableDataList={this.setTableDataList} setData={this.setData} />
@@ -152,15 +187,41 @@ export default class Index extends React.Component {
                 <EditableFormView {...this.state} setData={this.setData} />
               </div>
               <div className="index-content-bottom">
-                <Button onClick={()=>{ this.handleClick('renderSql')}} type="primary" size="small" style={{ margin: 10 }}>
-                  生成语句
-                </Button>
+                <Row>
+                  <Button onClick={() => { this.handleClick('renderSql') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading1}>
+                    生成语句
+                  </Button>
+                  <Button onClick={() => { this.handleClick('renderSearch') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading2}>
+                    执行查询
+                  </Button>
+                  <Button onClick={() => { this.handleClick('renderResult') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading3}>
+                    保存统计结果
+                  </Button>
+                </Row>
                 <TextArea
-                  // value={value}
+                  value={this.state.sqlWord}
                   // onChange={this.onChange}
                   // placeholder="Controlled autosize"
                   autosize={{ minRows: 3, maxRows: 5 }}
+                  onChange={(e) => {
+                    this.setState({
+                      sqlWord: e.target.value
+                    })
+                  }}
                 />
+                {
+                  currentStatus == 'renderSearch' &&
+                  <div style={{ padding: 10, marginTop: 10, background: '#fff' }}>
+                    <div style={{ paddingBottom: 10, color: '#000' }}>
+                      统计结果：
+                    </div>
+                    {
+                      columns.length > 0 && 
+                      <Table columns={columns} dataSource={dataSource} size="small" />
+
+                    }
+                  </div>
+                }
 
               </div>
 

@@ -25,7 +25,10 @@ class TableListView extends React.Component {
       // this.props.selectedKeysList
 
       // 此处请求接口，获取表字段
-      Fetch.getLogTableFields().then(res => {
+      Fetch.getLogTableFields({
+        id: this.props.selectedKeysList[index].id,
+        logSampleId: this.props.selectedKeysList[index].logSampleId
+      }).then(res => {
         console.log('res', res);
         let fieldList = res.data.fieldList.map((a) => ({
           ...a,
@@ -34,6 +37,7 @@ class TableListView extends React.Component {
 
         tableDataList[index] = {
           name: this.props.selectedKeysList[index].name,
+          logSampleId: this.props.selectedKeysList[index].logSampleId,
           id: this.props.currentSelectKey,
           key: this.props.currentSelectKey,
           data: fieldList
@@ -56,12 +60,13 @@ class TableListView extends React.Component {
   }
 
   onDel = (_id) => {
-    let { tableDataList, selectedKeysList } = this.props;
+    let { tableDataList, selectedKeysList, concatDataSource } = this.props;
 
     console.log(tableDataList, selectedKeysList, _id);
     this.props.setData({
       tableDataList: tableDataList.filter(({ id }) => id !== _id),
-      selectedKeysList: selectedKeysList.filter(({ id }) => id !== _id)
+      selectedKeysList: selectedKeysList.filter(({ id }) => id !== _id),
+      concatDataSource: concatDataSource.map(({ leftTableId, rightTableId, leftTableName, rightTableName, ...a }) => (leftTableId == _id || rightTableId == _id ? { leftTableId: '', leftTableName: '', rightTableId: '', rightTableName: '', ...a } : { leftTableId, rightTableId, leftTableName, rightTableName, ...a }))
     });
   }
 
@@ -156,7 +161,7 @@ class TableListView extends React.Component {
                 {
                   item &&
                   // <Card size="small" title={item.name} extra={<React.Fragment><Button size="small" onClick={() => { this.setState({ visible: true }) }}>配置联合id</Button><span style={{ color: 'rgb(149, 57, 60)', cursor: 'pointer', marginLeft: 5 }} onClick={() => { this.onDel(item.id) }}>删除</span></React.Fragment>}>
-                  <Card size="small" title={item.name} extra={<React.Fragment><span style={{ color: 'rgb(149, 57, 60)', cursor: 'pointer', marginLeft: 5 }} onClick={() => { this.onDel(item.id) }}>删除</span></React.Fragment>}>
+                  <Card size="small" style={{ minWidth: 323}} title={item.name} extra={<React.Fragment><span style={{ color: 'rgb(149, 57, 60)', cursor: 'pointer', marginLeft: 5 }} onClick={() => { this.onDel(item.id) }}>删除</span></React.Fragment>}>
                     <div >
                       {/* <Icon type="close" style={{ position: 'absolute', right: 0, top: 10, cursor: 'pointer' }} onClick={() => {
                         this.onDel(item.id)

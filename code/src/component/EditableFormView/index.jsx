@@ -23,68 +23,97 @@ class EditableTable extends React.Component {
         )
       },
       {
+        title: '表名',
+        dataIndex: 'sourceTableId',
+        render: (cur, item, index) => (
+          // <Input onChange={(e) => { this.handleOnchange(index, 'fieldName', e.target.value) }} placeholder="请输入"/>
+          <div>
+            <Select style={{ width: 160 }} placeholder="请选择" size="small" onChange={(v) => {
+              this.handleOnchange(index, 'sourceTableId', v);
+            }} value={this.props.formDataSource[index].sourceTableId}>
+              {
+                this.props.selectedKeysList.map(({ id, name, logSampleId }) => (
+                  <Option value={logSampleId} key={id}>{name}</Option>
+                ))
+              }
+            </Select>
+          </div>
+        )
+      },
+      {
         title: '字段名',
         dataIndex: 'fieldName',
-        type: 'input',
         render: (cur, item, index) => (
-          <Input onChange={(e) => { this.handleOnchange(index, 'fieldName', e.target.value) }} />
+          this.props.formDataSource[index].sourceTableId && this.props.selectedKeysList.length ?
+          <Select style={{ width: 160 }} placeholder="请选择" size="small" onChange={(v) => {
+            this.handleOnchange(index, 'fieldName', v);
+          }} value={this.props.formDataSource[index].fieldName}>
+            {
+              this.props.selectedKeysList.find(({ logSampleId }) => (logSampleId == this.props.formDataSource[index].sourceTableId)).fieldList.map(({ fieldName }, index) => (
+                <Option value={fieldName} key={index}>{fieldName}</Option>
+              ))
+            }
+          </Select>
+          :
+          <Input onChange={(e) => { this.handleOnchange(index, 'fieldName', e.target.value) }} placeholder="请输入"/>
         )
       },
       {
         title: '注释',
         dataIndex: 'desc',
-        type: 'input',
         render: (cur, item, index) => (
-          <Input onChange={(e) => { this.handleOnchange(index, 'desc', e.target.value) }} />
+          <Input onChange={(e) => { this.handleOnchange(index, 'desc', e.target.value) }} placeholder="请输入"/>
         )
       },
       {
         title: '条件',
-        dataIndex: 'age',
-        type: 'condition',
+        dataIndex: 'condition',
         render: (cur, item, index) => {
           const selectBefore = (
             <Select style={{ width: 118 }} placeholder="请选择" size="small" onChange={(v) => {
-              this.handleOnchange(index, 'checked', v);
+              this.handleOnchange(index, 'judge', v);
             }}>
-              <Option value="小于">小于</Option>
-              <Option value="等于">等于</Option>
-              <Option value="大于">大于</Option>
+              {/* <Option value="无">无</Option> */}
+              <Option value="1">{'<'}</Option>
+              <Option value="2">=</Option>
+              <Option value="3">></Option>
+              <Option value="4">{'<='}</Option>
+
             </Select>
           );
           return (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {selectBefore}
               <Input onChange={(e) => {
-                this.handleOnchange(index, 'checked', e.target.value);
-              }} />
+                this.handleOnchange(index, 'value', e.target.value);
+              }} placeholder="请输入"/>
             </div>
           )
         }
       },
       {
         title: '排序',
-        dataIndex: 'paixu',
+        dataIndex: 'sort',
         type: 'select',
         render: (cur, item, index) => (
           <Select style={{ maxWidth: 90, minWidth: 40, width: 85 }} placeholder="请选择" size="small" onChange={(v) => {
-            this.handleOnchange(index, 'checked', v);
+            this.handleOnchange(index, 'sort', v);
           }}>
-            <Option value="是">是</Option>
-            <Option value="否">否</Option>
+            <Option value="0">是</Option>
+            <Option value="1">否</Option>
           </Select>
         )
       },
       {
         title: '排序类型',
-        dataIndex: 'paixuType',
+        dataIndex: 'sortType',
         type: 'select',
         render: (cur, item, index) => (
           <Select style={{ maxWidth: 90, minWidth: 40, width: 85 }} placeholder="请选择" size="small" onChange={(v) => {
-            this.handleOnchange(index, 'checked', v);
+            this.handleOnchange(index, 'sortType', v);
           }}>
-            <Option value="从小到大">从小到大</Option>
-            <Option value="从大到小">从大到小</Option>
+            <Option value="0">从小到大</Option>
+            <Option value="1">从大到小</Option>
           </Select>
         )
       },
@@ -92,12 +121,12 @@ class EditableTable extends React.Component {
         title: '分组',
         dataIndex: '分组',
         type: 'select',
-        render: (cur, item) => (
+        render: (cur, item, index) => (
           <Select style={{ maxWidth: 90, minWidth: 40, width: 85 }} placeholder="请选择" size="small" onChange={(v) => {
-            this.handleOnchange(index, 'checked', v);
+            this.handleOnchange(index, 'group', v);
           }}>
-            <Option value="是">是</Option>
-            <Option value="否">否</Option>
+            <Option value="0">是</Option>
+            <Option value="1">否</Option>
           </Select>
         )
       },

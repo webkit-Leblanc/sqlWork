@@ -17,18 +17,18 @@ class TreeView extends React.Component {
   componentDidMount() {
   }
 
-  onSelect = (selectedKeys, {selected: bool, selectedNodes, node, event}) => {
+  onSelect = (selectedKeys, { selected: bool, selectedNodes, node, event }) => {
     let { selectedKeysList } = this.props;
-    console.log('selected', selectedKeys, bool, selectedNodes, node );
-    if(bool) {
-      if(node.props.children) {
-        message.error('请选择到子节点处');
-      }else {
-        if(selectedKeysList.includes(selectedKeys.join())) {
-          return message.error('当前节点已经添加，请勿重新添加！')
-        }else{
-          message.success('添加成功');
-          this.props.setSelectedKeysList({ id: selectedKeys.join(), name: selectedNodes[0].props.title });
+    console.log('selected', selectedKeys, bool, selectedNodes, node);
+    if (bool) {
+      if (node.props.children) {
+        layer.msg('请选择到子节点处');
+      } else {
+        if (selectedKeysList.map(({ id }) => (id)).includes(selectedKeys.join())) {
+          return layer.msg('当前节点已经添加，请勿重新添加！')
+        } else {
+          layer.msg('添加成功');
+          this.props.setSelectedKeysList({ id: selectedKeys.join(), name: selectedNodes[0].props.title, logSampleId: selectedNodes[0].props.logSampleId });
         }
       }
     }
@@ -47,7 +47,7 @@ class TreeView extends React.Component {
 
   render() {
     const { selectedKeysList } = this.props;
-  
+
     return (
       <div className="tree-view" key={JSON.stringify(this.props.treeData)}>
         <Tree onSelect={this.onSelect} showLine defaultExpandAll >

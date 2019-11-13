@@ -18,10 +18,10 @@ class EditableConcatIdFormView extends React.Component {
           <div>
             <Select style={{ width: 160 }} placeholder="请选择" size="small" onChange={(v) => {
               this.handleOnchange(index, 'leftTableId', v);
-            }}>
+            }} value={this.props.concatDataSource[index].leftTableId}>
               {
-                this.props.selectedKeysList.map(({ id, name})=>(
-                  <Option value={id} key={id}>{name}</Option>
+                this.props.selectedKeysList.map(({ id, name, logSampleId }) => (
+                  <Option value={logSampleId} key={id}>{name}</Option>
                 ))
               }
             </Select>
@@ -32,7 +32,18 @@ class EditableConcatIdFormView extends React.Component {
         title: '左字段名',
         dataIndex: 'leftJoinField',
         render: (cur, item, index) => (
-          <Input onChange={(e) => { this.handleOnchange(index, 'leftJoinField', e.target.value) }} />
+          this.props.concatDataSource[index].leftTableId && this.props.selectedKeysList.length ?
+            <Select style={{ width: 160 }} placeholder="请选择" size="small" onChange={(v) => {
+              this.handleOnchange(index, 'leftJoinField', v);
+            }} value={this.props.concatDataSource[index].leftJoinField}>
+              {
+                this.props.selectedKeysList.find(({ logSampleId }) => (logSampleId == this.props.concatDataSource[index].leftTableId)).fieldList.map(({ fieldName }, index) => (
+                  <Option value={fieldName} key={index}>{fieldName}</Option>
+                ))
+              }
+            </Select>
+            :
+            <Input onChange={(e) => { this.handleOnchange(index, 'leftJoinField', e.target.value) }} placeholder="请输入"/>
         )
       },
       {
@@ -42,10 +53,10 @@ class EditableConcatIdFormView extends React.Component {
           <div>
             <Select style={{ width: 160 }} placeholder="请选择" size="small" onChange={(v) => {
               this.handleOnchange(index, 'rightTableId', v);
-            }}>
-             {
-                this.props.selectedKeysList.map(({ id, name})=>(
-                  <Option value={id} key={id}>{name}</Option>
+            }}  value={this.props.concatDataSource[index].rightTableId}>
+              {
+                this.props.selectedKeysList.map(({ id, name, logSampleId }) => (
+                  <Option value={logSampleId} key={id}>{name}</Option>
                 ))
               }
             </Select>
@@ -57,7 +68,19 @@ class EditableConcatIdFormView extends React.Component {
         dataIndex: 'rightJoinField',
         render: (cur, item, index) => {
           return (
-            <Input onChange={(e) => { this.handleOnchange(index, 'rightJoinField', e.target.value) }} />
+            // <Input onChange={(e) => { this.handleOnchange(index, 'rightJoinField', e.target.value) }} />
+            this.props.concatDataSource[index].rightTableId  && this.props.selectedKeysList.length?
+              <Select style={{ width: 160 }} placeholder="请选择" size="small" onChange={(v) => {
+                this.handleOnchange(index, 'rightJoinField', v);
+              }} value={this.props.concatDataSource[index].rightJoinField}>
+                {
+                  this.props.selectedKeysList.find(({ logSampleId }) => (logSampleId == this.props.concatDataSource[index].rightTableId)).fieldList.map(({ fieldName }, index) => (
+                    <Option value={fieldName} key={index}>{fieldName}</Option>
+                  ))
+                }
+              </Select>
+              :
+              <Input onChange={(e) => { this.handleOnchange(index, 'rightJoinField', e.target.value) }} placeholder="请输入"/>
           )
         }
       },
@@ -67,8 +90,8 @@ class EditableConcatIdFormView extends React.Component {
         render: (text, record) =>
           this.props.concatDataSource.length >= 1 ? (
             // <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
-            <div style={{ textAlign: 'center' }} onClick={() => { this.handleDelete(record.key) }}>
-              <a style={{ color: '#95393c'}}>删除</a>
+            <div style={{ textAlign: 'center', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { this.handleDelete(record.key) }}>
+              <a style={{ color: '#95393c' }}>删除</a>
             </div>
             // </Popconfirm>
           ) : null,
