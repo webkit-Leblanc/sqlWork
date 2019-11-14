@@ -73,20 +73,24 @@ class EditableTable extends React.Component {
             <Select style={{ width: 118 }} placeholder="请选择" size="small" onChange={(v) => {
               this.handleOnchange(index, 'judge', v);
             }}>
-              {/* <Option value="无">无</Option> */}
-              <Option value="1">{'<'}</Option>
-              <Option value="2">=</Option>
-              <Option value="3">></Option>
-              <Option value="4">{'<='}</Option>
+              <Option value={0}>无</Option>
+              <Option value={1}>{'<'}</Option>
+              <Option value={2}>=</Option>
+              <Option value={3}>></Option>
+              <Option value={4}>{'<='}</Option>
 
             </Select>
           );
           return (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {selectBefore}
-              <Input onChange={(e) => {
-                this.handleOnchange(index, 'value', e.target.value);
-              }} placeholder="请输入"/>
+              {
+                this.props.formDataSource[index].judge !== 0 ?
+                <Input onChange={(e) => {
+                  this.handleOnchange(index, 'value', e.target.value);
+                }} placeholder="请输入"/> :
+                <Input disabled></Input>
+              }
             </div>
           )
         }
@@ -99,8 +103,8 @@ class EditableTable extends React.Component {
           <Select style={{ maxWidth: 90, minWidth: 40, width: 85 }} placeholder="请选择" size="small" onChange={(v) => {
             this.handleOnchange(index, 'sort', v);
           }}>
-            <Option value="0">是</Option>
-            <Option value="1">否</Option>
+            <Option value={0}>是</Option>
+            <Option value={1}>否</Option>
           </Select>
         )
       },
@@ -112,8 +116,8 @@ class EditableTable extends React.Component {
           <Select style={{ maxWidth: 90, minWidth: 40, width: 85 }} placeholder="请选择" size="small" onChange={(v) => {
             this.handleOnchange(index, 'sortType', v);
           }}>
-            <Option value="0">从小到大</Option>
-            <Option value="1">从大到小</Option>
+            <Option value={0}>从小到大</Option>
+            <Option value={1}>从大到小</Option>
           </Select>
         )
       },
@@ -125,8 +129,8 @@ class EditableTable extends React.Component {
           <Select style={{ maxWidth: 90, minWidth: 40, width: 85 }} placeholder="请选择" size="small" onChange={(v) => {
             this.handleOnchange(index, 'group', v);
           }}>
-            <Option value="0">是</Option>
-            <Option value="1">否</Option>
+            <Option value={0}>是</Option>
+            <Option value={1}>否</Option>
           </Select>
         )
       },

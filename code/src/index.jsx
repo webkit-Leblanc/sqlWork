@@ -30,6 +30,8 @@ render(
           <Content>
             <Switch>
               <Route path='/' component={Index} />
+              {/* <Route path='/SaveRes' component={Index} /> */}
+
             </Switch>
           </Content>
         </Layout>
