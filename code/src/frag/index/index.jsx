@@ -1,7 +1,7 @@
 import React from 'react';
 
 // import { Layout, Card, Modal } from 'antd';
-import { Layout, Icon, Button, Input, Row, Table } from 'antd';
+import { Layout, Icon, Button, Input, Row, Table, message } from 'antd';
 const { Sider } = Layout;
 const { TextArea } = Input;
 import TreeView from '../../component/TreeView';
@@ -41,17 +41,14 @@ export default class Index extends React.Component {
       columns: [],
       page: 1,
 
-      fieldList: [{
-        id: 1,
-        key: 1
-      },{
-        id: 2,
-        key: 2
-      }],
+      fieldList: [],
 
-      SaveResultData: {
-
-      }
+      saveResultData: {
+        // factTableName: '**_statistics_res_table'
+        
+      },
+      saveLoading: false,
+      columnsList: []
 
     };
   }
@@ -80,6 +77,56 @@ export default class Index extends React.Component {
     })
   }
 
+  onSaveFun = () => {
+    let { saveResultData, fieldList } = this.state;
+    console.log('fieldList', fieldList);
+    if (!saveResultData.factTableName) {
+      return layer.msg('请填写统计结果表名');
+    }
+    if (!saveResultData.factTableDesc) {
+      return layer.msg('请填写描述');
+    }
+    if (!saveResultData.chartType) {
+      return layer.msg('请选择图表类型');
+    }
+    // if (Object.keys(fieldList[0]).length !== 6) {
+    //   return layer.msg('表格数据不完整');
+    // }
+    // if (Object.keys(fieldList[1]).length !== 6) {
+    //   return layer.msg('表格数据不完整');
+    // }
+    this.setState({
+      saveLoading: true
+    });
+
+    Fetch.saveStatisticResult({
+      sql: this.state.sqlWord,
+      ...saveResultData,
+      fieldList: fieldList.map(({ fieldDesc, fieldName, fieldType1 }) => ({
+        fieldDesc, fieldName,
+        fieldType: fieldType1 ? 1 : 2
+      }))
+    }).then(res => {
+      console.log('res', res);
+      if (res.status == 200) {
+        layer.msg(res.msg);
+        this.setState({
+          page: 1,
+          saveLoading: false,
+          fieldList: [],
+          saveResultData: {
+            // factTableName: '**_statistics_res_table'
+          },
+        })
+      } else {
+        layer.msg(res.msg + ',请稍候重试！');
+        this.setState({
+          saveLoading: false
+        })
+      }
+    })
+  }
+
   setData = (data) => {
     this.setState({
       ...data
@@ -101,7 +148,7 @@ export default class Index extends React.Component {
       fields: data.filter(({ checked }) => (checked)).map(({ fieldName, aggrFunc }) => ({ fieldName, aggrFunc }))
     }));
 
-    let joinRelationship = concatDataSource.length && concatDataSource.map(({
+    let joinRelationship = concatDataSource.length ? concatDataSource.map(({
       leftJoinField,
       leftTableId,
       rightJoinField,
@@ -113,7 +160,7 @@ export default class Index extends React.Component {
       rightTableId,
       leftTableName: selectedKeysList.find(({ id }) => (id == leftTableId)) && selectedKeysList.find(({ id }) => (id == leftTableId)).name,
       rightTableName: selectedKeysList.find(({ id }) => (id == leftTableId)) && selectedKeysList.find(({ id }) => (id == leftTableId)).name,
-    }));
+    })) : [];
 
     let whereCondition = formDataSource.filter(({ checked }) => (checked)).map(({ fieldName, desc, judge, value, sort, sortType, group, sourceTableId }) => ({
       fieldName, desc, sort, sortType, group, sourceTableId,
@@ -157,17 +204,19 @@ export default class Index extends React.Component {
 
             console.log('res', res);
             if (res.status == 200) {
-              layer.msg('执行查询成功！');
+              layer.msg(res.msg);
               this.setState({
                 columns: res.data.columnNames.split(',').map((a) => ({
                   title: a,
                   dataIndex: a
                 })),
                 dataSource: res.data.data,
-                renderLoading2: false
+                renderLoading2: false,
+                columnsList: res.data.columnNames.split(','),
+                fieldList: res.data.columnNames.split(',').map((a, idx)=>({ id: idx, key: idx, fieldName: a}))
               })
             } else {
-              layer.msg('执行查询出错，请稍后重试！')
+              layer.msg(res.msg);
               this.setState({
                 renderLoading2: false
               });
@@ -180,19 +229,28 @@ export default class Index extends React.Component {
         //   renderLoading3: true
         // })
         console.log('保存结果');
-        // if (!this.state.sqlWord) {
-        //   layer.msg('查询语句为空，无法保存结果！');
-        //   this.setState({
-        //     renderLoading3: false
-        //   });
-        //   return;
-        // } else {
-        //   this.setState({
-        //     renderLoading3: false,
-        //     page: 2
-        //   });
-        //   return window.sql = this.state.sqlWord;
-        // }
+        if (!this.state.sqlWord) {
+          layer.msg('查询语句为空，无法保存结果！');
+          this.setState({
+            renderLoading3: false
+          });
+          return;
+        } 
+        else if(this.state.columnsList.length == 0){
+          layer.msg('未执行查询或者执行查询有误，无法保存结果！');
+          this.setState({
+            renderLoading3: false
+          });
+          return;
+        }
+        else {
+          this.setState({
+            renderLoading3: false,
+            page: 2
+          });
+          // return window.sql = this.state.sqlWord;
+          return;
+        }
     }
   }
 
@@ -250,7 +308,6 @@ export default class Index extends React.Component {
                           {
                             columns.length > 0 &&
                             <Table columns={columns} dataSource={dataSource} size="small" />
-
                           }
                         </div>
                       }
@@ -264,7 +321,7 @@ export default class Index extends React.Component {
               </Layout>
             </React.Fragment >
             :
-            <SaveResultView {...this.state}  setData={this.setData} > 
+            <SaveResultView {...this.state} setData={this.setData} onSaveFun={this.onSaveFun}>
             </SaveResultView>
         }
       </React.Fragment>

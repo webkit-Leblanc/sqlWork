@@ -161,7 +161,7 @@ class TableListView extends React.Component {
                 {
                   item &&
                   // <Card size="small" title={item.name} extra={<React.Fragment><Button size="small" onClick={() => { this.setState({ visible: true }) }}>配置联合id</Button><span style={{ color: 'rgb(149, 57, 60)', cursor: 'pointer', marginLeft: 5 }} onClick={() => { this.onDel(item.id) }}>删除</span></React.Fragment>}>
-                  <Card size="small" style={{ minWidth: 323}} title={item.name} extra={<React.Fragment><span style={{ color: 'rgb(149, 57, 60)', cursor: 'pointer', marginLeft: 5 }} onClick={() => { this.onDel(item.id) }}>删除</span></React.Fragment>}>
+                  <Card size="small" style={{ minWidth: 323 }} title={<React.Fragment>{item.name}<br /><span style={{ fontSize: 12}}>表名：log_detail_table_{item.logSampleId}</span></React.Fragment>} extra={<React.Fragment><span style={{ color: 'rgb(149, 57, 60)', cursor: 'pointer', marginLeft: 5 }} onClick={() => { this.onDel(item.id) }}>删除</span></React.Fragment>}>
                     <div >
                       {/* <Icon type="close" style={{ position: 'absolute', right: 0, top: 10, cursor: 'pointer' }} onClick={() => {
                         this.onDel(item.id)
