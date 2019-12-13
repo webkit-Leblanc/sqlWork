@@ -17,11 +17,17 @@
   &-top {
     height: 50%;
     // padding: 10px;
-    overflow-y: scroll;
+    overflow-x: hidden;
+    overflow-y: auto;
     min-height: 50%;
   }
 
   &-bottom {
     margin-bottom: 10px;
   }
+
+}
+
+.ant-tabs-bar{
+  margin: 0 !important;
 }

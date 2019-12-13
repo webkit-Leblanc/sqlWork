@@ -141,7 +141,7 @@ class EditableTable extends React.Component {
           this.props.formDataSource.length >= 1 ? (
             // <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
             <div style={{ textAlign: 'center' }} onClick={() => { this.handleDelete(record.key) }}>
-              <a style={{ color: '#95393c'}}>删除</a>
+              <a>删除</a>
             </div>
             // </Popconfirm>
           ) : null,

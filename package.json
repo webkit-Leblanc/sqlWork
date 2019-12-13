@@ -39,6 +39,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "@uiw/react-codemirror": "^2.0.0",
     "antd": "^3.10.8",
     "antd-mobile": "2.1.6",
     "babel-polyfill": "^6.26.0",

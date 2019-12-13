@@ -1,7 +1,7 @@
 import React from 'react';
 
 // import { Layout, Card, Modal } from 'antd';
-import { Layout, Icon, Button, Input, Row, Table, message } from 'antd';
+import { Layout, Icon, Button, Input, Row, Table, message, Tabs } from 'antd';
 const { Sider } = Layout;
 const { TextArea } = Input;
 import TreeView from '../../component/TreeView';
@@ -9,11 +9,20 @@ import TableListView from '../../component/TableListView';
 import EditableFormView from '../../component/EditableFormView';
 import EditableConcatIdFormView from '../../component/EditableConcatIdFormView';
 import SaveResultView from '../../component/SaveResultView';
+import CodeMirror from '@uiw/react-codemirror';
+import 'codemirror/keymap/sublime';
+import 'codemirror/theme/monokai.css';
+import 'codemirror/theme/eclipse.css';
+
+import 'codemirror/mode/sql/sql';
+import 'codemirror/addon/hint/show-hint.js'
+import 'codemirror/addon/hint/sql-hint.js'
 
 
 import Fetch from '../../fetch';
 import './index.scss';
 import ListBodyWrapper from 'antd/lib/transfer/renderListBody';
+const { TabPane } = Tabs;
 
 
 export default class Index extends React.Component {
@@ -39,19 +48,61 @@ export default class Index extends React.Component {
       sqlWord: '',
 
       columns: [],
+      dataSource: [],
       page: 1,
 
       fieldList: [],
 
       saveResultData: {
         // factTableName: '**_statistics_res_table'
-        
+
       },
       saveLoading: false,
-      columnsList: []
+      columnsList: [],
+
+      panes: [{ sql: '' }],
+      activeKey: '0'
+
 
     };
   }
+
+  onChange = activeKey => {
+    this.setState({ activeKey });
+  };
+
+  onEdit = (targetKey, action) => {
+    this[action](targetKey);
+  };
+
+  add = () => {
+    const { panes } = this.state;
+    const activeKey = `${panes.length}`;
+    panes.push({ sql: '' });
+    console.log('panes', panes);
+    this.setState({ panes, activeKey });
+  };
+
+  remove = targetKey => {
+    console.log('targetKey', targetKey);
+    let { activeKey } = this.state;
+    let lastIndex;
+    this.state.panes.forEach((pane, i) => {
+      if (`${i}` === targetKey) {
+        lastIndex = i - 1;
+      }
+    });
+    console.log('lastIndex', lastIndex);
+    const panes = this.state.panes.filter((pane, idx) => `${idx}` !== targetKey);
+    if (panes.length) {
+      if (lastIndex >= 0) {
+        activeKey = `${lastIndex}`;
+      } else {
+        activeKey = '0';
+      }
+    }
+    this.setState({ panes, activeKey });
+  };
 
   componentDidMount() {
     let _this = this;
@@ -78,7 +129,7 @@ export default class Index extends React.Component {
   }
 
   onSaveFun = () => {
-    let { saveResultData, fieldList } = this.state;
+    let { saveResultData, fieldList, panes, activeKey } = this.state;
     console.log('fieldList', fieldList);
     if (!saveResultData.factTableName) {
       return layer.msg('请填写统计结果表名');
@@ -100,7 +151,7 @@ export default class Index extends React.Component {
     });
 
     Fetch.saveStatisticResult({
-      sql: this.state.sqlWord,
+      sql: panes[activeKey].sql,
       ...saveResultData,
       fieldList: fieldList.map(({ fieldDesc, fieldName, fieldType1 }) => ({
         fieldDesc, fieldName,
@@ -140,7 +191,7 @@ export default class Index extends React.Component {
   }
 
   handleClick = (key) => {
-    let { tableDataList, formDataSource, concatDataSource, selectedKeysList } = this.state;
+    let { tableDataList, formDataSource, concatDataSource, selectedKeysList, panes, activeKey } = this.state;
     this.setState({ currentStatus: key }); //
 
     let selectFields = tableDataList.length && tableDataList.map(({ id, logSampleId, data }) => ({
@@ -180,10 +231,21 @@ export default class Index extends React.Component {
           joinRelationship: JSON.stringify(joinRelationship) == '[{}]' ? [] : joinRelationship, whereCondition, selectFields
         }).then(res => {
           console.log('res', res);
-          this.setState({
-            sqlWord: res.data,
-            renderLoading1: false
-          })
+          layer.msg(res.msg);
+          if (res.status == 200) {
+            panes[activeKey].sql = res.data;
+            this.setState({
+              panes,
+              renderLoading1: false
+            })
+          } else {
+            panes[activeKey].sql = res.data;
+            console.log('panes',panes);
+            this.setState({
+              panes,
+              renderLoading1: false
+            });
+          }
         })
         return;
       case 'renderSearch':
@@ -191,7 +253,7 @@ export default class Index extends React.Component {
         this.setState({
           renderLoading2: true
         });
-        if (!this.state.sqlWord) {
+        if (!panes[activeKey].sql) {
           layer.msg('查询语句为空，无法查询！');
           this.setState({
             renderLoading2: false
@@ -199,7 +261,7 @@ export default class Index extends React.Component {
           return;
         } else {
           return Fetch.getDynamicSqlDataList({
-            sql: this.state.sqlWord
+            sql: panes[activeKey].sql
           }).then(res => {
 
             console.log('res', res);
@@ -213,7 +275,7 @@ export default class Index extends React.Component {
                 dataSource: res.data.data,
                 renderLoading2: false,
                 columnsList: res.data.columnNames.split(','),
-                fieldList: res.data.columnNames.split(',').map((a, idx)=>({ id: idx, key: idx, fieldName: a}))
+                fieldList: res.data.columnNames.split(',').map((a, idx) => ({ id: idx, key: idx, fieldName: a }))
               })
             } else {
               layer.msg(res.msg);
@@ -229,14 +291,14 @@ export default class Index extends React.Component {
         //   renderLoading3: true
         // })
         console.log('保存结果');
-        if (!this.state.sqlWord) {
+        if (!panes[activeKey].sql) {
           layer.msg('查询语句为空，无法保存结果！');
           this.setState({
             renderLoading3: false
           });
           return;
-        } 
-        else if(this.state.columnsList.length == 0){
+        }
+        else if (this.state.columnsList.length == 0) {
           layer.msg('未执行查询或者执行查询有误，无法保存结果！');
           this.setState({
             renderLoading3: false
@@ -255,18 +317,18 @@ export default class Index extends React.Component {
   }
 
   render() {
-    const { selectedKeysList, treeData, currentStatus, columns, dataSource, page } = this.state;
+    const { selectedKeysList, treeData, currentStatus, columns, dataSource, page, activeKey, panes } = this.state;
 
     return (
       <React.Fragment>
         {
           page == 1 ?
             <React.Fragment>
-              <Layout style={{ height: '100%', overflow: 'scroll' }}>
-                <Sider style={{ overflow: 'scroll' }}>
+              <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'auto' }}>
+                <Sider style={{ overflowY: 'auto', overflowX: 'auto' }}>
                   <TreeView treeData={treeData} setSelectedKeysList={this.setSelectedKeysList} {...this.state} />
                 </Sider>
-                <Layout style={{ height: '100%', overflow: 'scroll', padding: 10 }}>
+                <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', padding: 10 }}>
                   <div className="index-content-flex">
                     <div className="index-content-top" >
                       <TableListView {...this.state} key={selectedKeysList.join(',')} setTableDataList={this.setTableDataList} setData={this.setData} />
@@ -288,26 +350,65 @@ export default class Index extends React.Component {
                           保存统计结果
                     </Button>
                       </Row>
-                      <TextArea
+                      <CodeMirror
+                        ref="editorsql"
                         value={this.state.sqlWord}
-                        // onChange={this.onChange}
-                        // placeholder="Controlled autosize"
-                        autosize={{ minRows: 3, maxRows: 5 }}
-                        onChange={(e) => {
+                        options={{
+                          // theme: 'monokai',
+                          theme: 'eclipse',
+                          tabSize: 2,
+                          lineNumbers: true,
+                          keyMap: 'sublime',
+                          mode: 'text/x-sql',
+                          lineNumbers: true,                     //显示行号
+                          extraKeys: { "Ctrl": "autocomplete" },   //自动提示配置
+                        }}
+                        onChange={(editor) => {
+                          console.log(editor.getValue());
                           this.setState({
-                            sqlWord: e.target.value
+                            sqlWord: editor.getValue()
                           })
                         }}
                       />
+
+                      <Tabs
+                        onChange={this.onChange}
+                        activeKey={this.state.activeKey}
+                        type="editable-card"
+                        onEdit={this.onEdit}
+                      >
+                        {panes.map((pane, idx) => (
+                          <TabPane tab={'Editor' + `${idx + 1}`} key={`${idx}`} closable={true}>
+                            <TextArea
+                              value={pane.sql}
+                              // onChange={this.onChange}
+                              // placeholder="Controlled autosize"
+                              autosize={{ minRows: 3, maxRows: 5 }}
+                              onChange={(e) => {
+                                let { panes, activeKey } = this.state;
+                                panes[activeKey].sql = e.target.value
+                                this.setState({
+                                  panes
+                                });
+                                // this.setState({
+                                //   sqlWord: e.target.value
+                                // })
+                              }}
+                            />
+                          </TabPane>
+                        ))}
+                      </Tabs>
+
+
                       {
-                        currentStatus == 'renderSearch' &&
+                        currentStatus == 'renderSearch' && columns.length > 0 &&
                         <div style={{ padding: 10, marginTop: 10, background: '#fff' }}>
                           <div style={{ paddingBottom: 10, color: '#000' }}>
                             统计结果：
                       </div>
                           {
                             columns.length > 0 &&
-                            <Table columns={columns} dataSource={dataSource} size="small" />
+                            <Table columns={columns} dataSource={dataSource} size="small" scroll={{ x: true }} />
                           }
                         </div>
                       }

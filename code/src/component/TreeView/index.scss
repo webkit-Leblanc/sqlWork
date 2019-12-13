@@ -1,11 +1,19 @@
 .index-footer-view {
-  height: 24vh;;
+  height: 24vh;
   padding: 10px;
-  &-content{
+  &-content {
     height: 100%;
     border: 1px solid transparent;
     border-radius: 4px;
     border-image-width: 18px;
     opacity: 0.75;
   }
+}
+
+.tree-view {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

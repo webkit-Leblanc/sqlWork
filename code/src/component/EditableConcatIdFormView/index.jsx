@@ -91,7 +91,7 @@ class EditableConcatIdFormView extends React.Component {
           this.props.concatDataSource.length >= 1 ? (
             // <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
             <div style={{ textAlign: 'center', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { this.handleDelete(record.key) }}>
-              <a style={{ color: '#95393c' }}>删除</a>
+              <a>删除</a>
             </div>
             // </Popconfirm>
           ) : null,

@@ -25,7 +25,7 @@ const options = {
   contentBase: path.join(basedir, 'server'),
   hotOnly: true,
   host: '0.0.0.0',
-  port: parseInt(process.env.PORT || 8080),
+  port: parseInt(process.env.PORT || 9090),
   hot: true
 };
 
@@ -33,10 +33,10 @@ const options = {
 webpackDevServer.addDevServerEntrypoints(config, options);
 const compiler = webpack(config);
 const server = new webpackDevServer(compiler, options);
-server.listen(parseInt(process.env.PORT || 8080), '0.0.0.0', () => {
-  console.log(chalk.yellow(`\nDev server listening on port ${parseInt(process.env.PORT || 8080)}\n`));
+server.listen(parseInt(process.env.PORT || 9090), '0.0.0.0', () => {
+  console.log(chalk.yellow(`\nDev server listening on port ${parseInt(process.env.PORT || 9090)}\n`));
   Object.keys(entry)
-    .map(name => `http://localhost:${parseInt(process.env.PORT || 8080)}/${name}.html`)
+    .map(name => `http://localhost:${parseInt(process.env.PORT || 9090)}/${name}.html`)
     .forEach(page => {
       console.log(chalk.green(page))
       require('opn')(page);
