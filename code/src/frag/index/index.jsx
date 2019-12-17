@@ -240,7 +240,7 @@ export default class Index extends React.Component {
             })
           } else {
             panes[activeKey].sql = res.data;
-            console.log('panes',panes);
+            console.log('panes', panes);
             this.setState({
               panes,
               renderLoading1: false
@@ -350,26 +350,7 @@ export default class Index extends React.Component {
                           保存统计结果
                     </Button>
                       </Row>
-                      <CodeMirror
-                        ref="editorsql"
-                        value={this.state.sqlWord}
-                        options={{
-                          // theme: 'monokai',
-                          theme: 'eclipse',
-                          tabSize: 2,
-                          lineNumbers: true,
-                          keyMap: 'sublime',
-                          mode: 'text/x-sql',
-                          lineNumbers: true,                     //显示行号
-                          extraKeys: { "Ctrl": "autocomplete" },   //自动提示配置
-                        }}
-                        onChange={(editor) => {
-                          console.log(editor.getValue());
-                          this.setState({
-                            sqlWord: editor.getValue()
-                          })
-                        }}
-                      />
+
 
                       <Tabs
                         onChange={this.onChange}
@@ -381,8 +362,6 @@ export default class Index extends React.Component {
                           <TabPane tab={'Editor' + `${idx + 1}`} key={`${idx}`} closable={true}>
                             <TextArea
                               value={pane.sql}
-                              // onChange={this.onChange}
-                              // placeholder="Controlled autosize"
                               autosize={{ minRows: 3, maxRows: 5 }}
                               onChange={(e) => {
                                 let { panes, activeKey } = this.state;
@@ -390,11 +369,32 @@ export default class Index extends React.Component {
                                 this.setState({
                                   panes
                                 });
-                                // this.setState({
-                                //   sqlWord: e.target.value
-                                // })
                               }}
                             />
+
+                            {/* <CodeMirror
+                              height="120px"
+                              ref="editorsql"
+                              value={pane.sql}
+                              options={{
+                                // theme: 'monokai',
+                                theme: 'eclipse',
+                                tabSize: 2,
+                                lineNumbers: true,
+                                keyMap: 'sublime',
+                                mode: 'text/x-sql',
+                                lineNumbers: true,                     //显示行号
+                                extraKeys: { "Ctrl": "autocomplete" },   //自动提示配置
+                              }}
+                              onChange={(editor) => {
+                                console.log(editor.getValue());
+                                let { panes, activeKey } = this.state;
+                                panes[activeKey].sql = editor.getValue();
+                                this.setState({
+                                  panes
+                                });
+                              }}
+                            /> */}
                           </TabPane>
                         ))}
                       </Tabs>
