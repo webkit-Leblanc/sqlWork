@@ -360,7 +360,8 @@ export default class Index extends React.Component {
                       >
                         {panes.map((pane, idx) => (
                           <TabPane tab={'Editor' + `${idx + 1}`} key={`${idx}`} closable={true}>
-                            <TextArea
+                            {/* 文本框 */}
+                            {/* <TextArea
                               value={pane.sql}
                               autosize={{ minRows: 3, maxRows: 5 }}
                               onChange={(e) => {
@@ -370,9 +371,9 @@ export default class Index extends React.Component {
                                   panes
                                 });
                               }}
-                            />
-
-                            {/* <CodeMirror
+                            /> */}
+                            {/* 编辑框 */}
+                            <CodeMirror
                               height="120px"
                               ref="editorsql"
                               value={pane.sql}
@@ -394,7 +395,7 @@ export default class Index extends React.Component {
                                   panes
                                 });
                               }}
-                            /> */}
+                            />
                           </TabPane>
                         ))}
                       </Tabs>
