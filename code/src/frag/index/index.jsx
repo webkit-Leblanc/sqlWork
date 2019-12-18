@@ -9,14 +9,25 @@ import TableListView from '../../component/TableListView';
 import EditableFormView from '../../component/EditableFormView';
 import EditableConcatIdFormView from '../../component/EditableConcatIdFormView';
 import SaveResultView from '../../component/SaveResultView';
-import CodeMirror from '@uiw/react-codemirror';
+//--
+//import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror from 'codemirror'
+import 'codemirror/lib/codemirror.css'
+//--
 import 'codemirror/keymap/sublime';
 import 'codemirror/theme/monokai.css';
 import 'codemirror/theme/eclipse.css';
 
 import 'codemirror/mode/sql/sql';
+// 引入代码提示
+import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/hint/show-hint.js'
 import 'codemirror/addon/hint/sql-hint.js'
+import 'codemirror/addon/selection/active-line.js'
+// 引入keymap,注释
+import 'codemirror/addon/comment/comment'
+import 'codemirror/keymap/sublime'
+
 
 
 import Fetch from '../../fetch';
@@ -65,10 +76,15 @@ export default class Index extends React.Component {
 
 
     };
+    //--
+    this.editor = null
   }
 
   onChange = activeKey => {
-    this.setState({ activeKey });
+    let { panes } = this.state;
+    this.setState({ activeKey }, () => {
+      this.editor.setValue(panes[activeKey].sql);
+    });
   };
 
   onEdit = (targetKey, action) => {
@@ -80,7 +96,9 @@ export default class Index extends React.Component {
     const activeKey = `${panes.length}`;
     panes.push({ sql: '' });
     console.log('panes', panes);
-    this.setState({ panes, activeKey });
+    this.setState({ panes, activeKey }, () => {
+      this.editor.setValue('');
+    });
   };
 
   remove = targetKey => {
@@ -92,6 +110,9 @@ export default class Index extends React.Component {
         lastIndex = i - 1;
       }
     });
+    if (lastIndex == -1) {
+      return;
+    }
     console.log('lastIndex', lastIndex);
     const panes = this.state.panes.filter((pane, idx) => `${idx}` !== targetKey);
     if (panes.length) {
@@ -101,7 +122,9 @@ export default class Index extends React.Component {
         activeKey = '0';
       }
     }
-    this.setState({ panes, activeKey });
+    this.setState({ panes, activeKey }, () => {
+      this.editor.setValue(panes[activeKey].sql);
+    });
   };
 
   componentDidMount() {
@@ -118,7 +141,53 @@ export default class Index extends React.Component {
         ]
       })
     })
+
+
+    //--
+    this.editor = CodeMirror.fromTextArea(this.codeDom, {
+      lineNumbers: true,
+      keyMap: 'sublime',
+      indentUnit: 4,
+      tabSize: 4,
+      mode: 'text/x-sql',
+      showCursorWhenSelecting: true,
+      option: {
+        autofocus: true
+      },
+      //  这是针对sql有自定义表和字段的，这样可以把自己的表和字段也放入提示里。如果数据是异步请求获取的，可以通过editor.setOption('hintOptions', data)
+      /* hintOptions: {
+        tables: {
+          table1: [ 'col_A', 'col_B', 'col_C' ],
+          table2: [ 'other_columns1', 'other_columns2' ]
+        }
+      } */
+    })
+
+    // 讲editor实例传入redux
+    //saveEditor(this.editor)
+
+    // 将自动提示绑定到change事件上，这样输入的时候就可以看到联想的关键词
+    this.editor.on('change', (instance, change) => {
+      // 自动补全的时候(change.origin == 'complete')，也会触发change事件，所以做下判断，以免死循环;正则是为了不让空格，换行之类的也提示
+      // 通过change对象你可以自定义一些规则去判断是否提示
+      if (change.origin !== 'complete' && change.origin !== 'setValue' && /\w|\./g.test(change.text[0])) {
+        instance.showHint()
+      }
+      //--
+      console.log(this.editor.getValue());
+      let { panes, activeKey } = this.state;
+      panes[activeKey].sql = this.editor.getValue();
+      this.setState({
+        panes
+      });
+    })
+    //--
   }
+
+  //--
+  // 获取编辑器的内容，以便提交
+  getTextareaCode = () => this.editor.getValue()
+  //--
 
   setSelectedKeysList = (list) => {
     let { selectedKeysList } = this.state;
@@ -188,6 +257,23 @@ export default class Index extends React.Component {
     this.setState({
       tableDataList: list
     })
+    //--
+    let chooseTables = {};
+    for (let i = 0; i < list.length; i++) {
+      let chooseTableInfo = list[i];
+      let fieldList = chooseTableInfo.data;
+      let chooseFieldList = [];
+      for (let i = 0; i < fieldList.length; i++) {
+        chooseFieldList.push(fieldList[i].fieldName);
+      }
+      chooseTables['log_detail_table_' + chooseTableInfo.logSampleId] = chooseFieldList;
+    }
+
+    let myHintOptions = {
+      tables: chooseTables
+    };
+    this.editor.setOption('hintOptions', myHintOptions)
+    //--
   }
 
   handleClick = (key) => {
@@ -237,7 +323,8 @@ export default class Index extends React.Component {
             this.setState({
               panes,
               renderLoading1: false
-            })
+            });
+            this.editor.setValue(res.data);
           } else {
             panes[activeKey].sql = res.data;
             console.log('panes', panes);
@@ -245,6 +332,7 @@ export default class Index extends React.Component {
               panes,
               renderLoading1: false
             });
+            this.editor.setValue(res.data);
           }
         })
         return;
@@ -284,7 +372,6 @@ export default class Index extends React.Component {
               });
             }
           })
-
         }
       case 'renderResult':
         // this.setState({
@@ -319,110 +406,128 @@ export default class Index extends React.Component {
   render() {
     const { selectedKeysList, treeData, currentStatus, columns, dataSource, page, activeKey, panes } = this.state;
 
+    //--
+    const { collectTitle } = this.state
+    const { adhoc } = this.props
+    //const { editorValue } = adhoc
+    //--
     return (
       <React.Fragment>
-        {
-          page == 1 ?
-            <React.Fragment>
-              <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'auto' }}>
-                <Sider style={{ overflowY: 'auto', overflowX: 'auto' }}>
-                  <TreeView treeData={treeData} setSelectedKeysList={this.setSelectedKeysList} {...this.state} />
-                </Sider>
-                <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', padding: 10 }}>
-                  <div className="index-content-flex">
-                    <div className="index-content-top" >
-                      <TableListView {...this.state} key={selectedKeysList.join(',')} setTableDataList={this.setTableDataList} setData={this.setData} />
-                    </div>
+        <div style={{ display: page == 1 ? 'block': 'none', height: '100%'}}>
+          <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'auto'}}>
+            <Sider style={{ overflowY: 'auto', overflowX: 'auto' }}>
+              <TreeView treeData={treeData} setSelectedKeysList={this.setSelectedKeysList} {...this.state} />
+            </Sider>
+            <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', padding: 10 }}>
+              <div className="index-content-flex">
+                <div className="index-content-top" >
+                  <TableListView {...this.state} key={selectedKeysList.join(',')} setTableDataList={this.setTableDataList} setData={this.setData} />
+                </div>
 
-                    <div className="index-content-middle">
-                      <EditableConcatIdFormView {...this.state} setData={this.setData} />
-                      <EditableFormView {...this.state} setData={this.setData} />
-                    </div>
-                    <div className="index-content-bottom">
-                      <Row>
-                        <Button onClick={() => { this.handleClick('renderSql') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading1}>
-                          生成语句
+                <div className="index-content-middle">
+                  <EditableConcatIdFormView {...this.state} setData={this.setData} />
+                  <EditableFormView {...this.state} setData={this.setData} />
+                </div>
+                <div className="index-content-bottom">
+                  <Row>
+                    <Button onClick={() => { this.handleClick('renderSql') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading1}>
+                      生成SQL
                     </Button>
-                        <Button onClick={() => { this.handleClick('renderSearch') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading2}>
-                          执行查询
+                    <Button onClick={() => { this.handleClick('renderSearch') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading2}>
+                      执行SQL
                     </Button>
-                        <Button onClick={() => { this.handleClick('renderResult') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading3}>
-                          保存统计结果
+                    <Button onClick={() => { this.handleClick('renderResult') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading3}>
+                      保存统计结果
                     </Button>
-                      </Row>
+                  </Row>
 
 
-                      <Tabs
-                        onChange={this.onChange}
-                        activeKey={this.state.activeKey}
-                        type="editable-card"
-                        onEdit={this.onEdit}
-                      >
-                        {panes.map((pane, idx) => (
-                          <TabPane tab={'Editor' + `${idx + 1}`} key={`${idx}`} closable={true}>
-                            {/* 文本框 */}
-                            {/* <TextArea
-                              value={pane.sql}
-                              autosize={{ minRows: 3, maxRows: 5 }}
-                              onChange={(e) => {
-                                let { panes, activeKey } = this.state;
-                                panes[activeKey].sql = e.target.value
-                                this.setState({
-                                  panes
-                                });
-                              }}
-                            /> */}
-                            {/* 编辑框 */}
-                            <CodeMirror
-                              height="120px"
-                              ref="editorsql"
-                              value={pane.sql}
-                              options={{
-                                // theme: 'monokai',
-                                theme: 'eclipse',
-                                tabSize: 2,
-                                lineNumbers: true,
-                                keyMap: 'sublime',
-                                mode: 'text/x-sql',
-                                lineNumbers: true,                     //显示行号
-                                extraKeys: { "Ctrl": "autocomplete" },   //自动提示配置
-                              }}
-                              onChange={(editor) => {
-                                console.log(editor.getValue());
-                                let { panes, activeKey } = this.state;
-                                panes[activeKey].sql = editor.getValue();
-                                this.setState({
-                                  panes
-                                });
-                              }}
-                            />
-                          </TabPane>
-                        ))}
-                      </Tabs>
+                  <Tabs
+                    onChange={this.onChange}
+                    activeKey={this.state.activeKey}
+                    type="editable-card"
+                    onEdit={this.onEdit}
+                  >
+                    {panes.map((pane, idx) => (
+                      <TabPane tab={'Editor' + `${idx + 1}`} key={`${idx}`} closable={true}>
+
+                        {/* 编辑框 */}
 
 
-                      {
-                        currentStatus == 'renderSearch' && columns.length > 0 &&
-                        <div style={{ padding: 10, marginTop: 10, background: '#fff' }}>
-                          <div style={{ paddingBottom: 10, color: '#000' }}>
-                            统计结果：
+                      </TabPane>
+                    ))}
+
+                  </Tabs>
+                  <textarea
+                    autosize={{ minRows: 3, maxRows: 5 }}
+                    height="120px"
+                    //ref="editorsql"
+                    ref={
+                      p => { this.codeDom = p }
+                    }
+                    value={panes[activeKey].sql}
+                    placeholder="edit sql here..."
+                    /* options={{
+                      theme: 'eclipse',
+                      tabSize: 2,
+                      lineNumbers: true,
+                      keyMap: 'sublime',
+                      mode: 'text/x-sql',
+                      lineNumbers: true,                     //显示行号
+      //
+      indentWithTabs: true,  
+      smartIndent: true,  
+      styleActiveLine: true,
+      lineWrapping: true,  
+      matchBrackets: true,
+      autofocus: true,
+                      extraKeys: { "Ctrl": "autocomplete" },   //自动补全
+      hintOptions: {                           //自动提示配置
+        completeSingle: false,
+        //hint: this.handleShowHint
+        tables: {
+          "db.t1":['a','b','c'],
+          "db.t2":['1','2','3']
+        }
+      },
+    	
+                    }} */
+                    onChange={(editor) => {
+                      //console.log(editor.getValue());
+                      let { panes, activeKey } = this.state;
+                      panes[activeKey].sql = editor.getValue();
+                      this.setState({
+                        panes
+                      });
+
+                    }}
+
+                  />
+
+
+                  {
+                    currentStatus == 'renderSearch' && columns.length > 0 &&
+                    <div style={{ padding: 10, marginTop: 10, background: '#fff' }}>
+                      <div style={{ paddingBottom: 10, color: '#000' }}>
+                        统计结果：
                       </div>
-                          {
-                            columns.length > 0 &&
-                            <Table columns={columns} dataSource={dataSource} size="small" scroll={{ x: true }} />
-                          }
-                        </div>
+                      {
+                        columns.length > 0 &&
+                        <Table columns={columns} dataSource={dataSource} size="small" scroll={{ x: true }} />
                       }
-
                     </div>
+                  }
 
-                  </div>
+                </div>
 
-                </Layout>
+              </div>
 
-              </Layout>
-            </React.Fragment >
-            :
+            </Layout>
+
+          </Layout>
+        </div>
+        {
+          page == 2 && 
             <SaveResultView {...this.state} setData={this.setData} onSaveFun={this.onSaveFun}>
             </SaveResultView>
         }
