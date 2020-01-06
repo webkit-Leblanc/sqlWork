@@ -445,7 +445,9 @@ export default class Index extends React.Component {
                     </Col>
                     <Col>
                       <Tooltip title="教程文档">
-                        <Icon type="question-circle" style={{ cursor: 'pointer', fontSize: '18px', marginRight: 10 }} />
+                        <Icon type="question-circle" style={{ cursor: 'pointer', fontSize: '18px', marginRight: 10 }} onClick={()=>{
+                          window.open(window.location.href + '/statisticsManage/statisticsSqlHelpDoc');
+                        }}/>
                       </Tooltip>
                     </Col>
                   </Row>
