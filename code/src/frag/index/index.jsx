@@ -1,7 +1,7 @@
 import React from 'react';
 
 // import { Layout, Card, Modal } from 'antd';
-import { Layout, Icon, Button, Input, Row, Table, message, Tabs } from 'antd';
+import { Layout, Icon, Button, Input, Row, Col, Table, message, Tabs, Tooltip } from 'antd';
 const { Sider } = Layout;
 const { TextArea } = Input;
 import TreeView from '../../component/TreeView';
@@ -145,6 +145,7 @@ export default class Index extends React.Component {
 
     //--
     this.editor = CodeMirror.fromTextArea(this.codeDom, {
+      height: '50px',
       lineNumbers: true,
       keyMap: 'sublime',
       indentUnit: 4,
@@ -165,6 +166,7 @@ export default class Index extends React.Component {
 
     // 讲editor实例传入redux
     //saveEditor(this.editor)
+    this.editor.setSize('100%', 150);
 
     // 将自动提示绑定到change事件上，这样输入的时候就可以看到联想的关键词
     this.editor.on('change', (instance, change) => {
@@ -413,8 +415,8 @@ export default class Index extends React.Component {
     //--
     return (
       <React.Fragment>
-        <div style={{ display: page == 1 ? 'block': 'none', height: '100%'}}>
-          <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'auto'}}>
+        <div style={{ display: page == 1 ? 'block' : 'none', height: '100%' }}>
+          <Layout style={{ height: '100%', overflowY: 'auto', overflowX: 'auto' }}>
             <Sider style={{ overflowY: 'auto', overflowX: 'auto' }}>
               <TreeView treeData={treeData} setSelectedKeysList={this.setSelectedKeysList} {...this.state} />
             </Sider>
@@ -429,16 +431,23 @@ export default class Index extends React.Component {
                   <EditableFormView {...this.state} setData={this.setData} />
                 </div>
                 <div className="index-content-bottom">
-                  <Row>
-                    <Button onClick={() => { this.handleClick('renderSql') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading1}>
-                      生成SQL
-                    </Button>
-                    <Button onClick={() => { this.handleClick('renderSearch') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading2}>
-                      执行SQL
-                    </Button>
-                    <Button onClick={() => { this.handleClick('renderResult') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading3}>
-                      保存统计结果
-                    </Button>
+                  <Row type="flex" justify="space-between" align="middle">
+                    <Col>
+                      <Button onClick={() => { this.handleClick('renderSql') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading1}>
+                        生成SQL
+                      </Button>
+                      <Button onClick={() => { this.handleClick('renderSearch') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading2}>
+                        执行SQL
+                      </Button>
+                      <Button onClick={() => { this.handleClick('renderResult') }} type="primary" size="small" style={{ margin: 10 }} loading={this.state.renderLoading3}>
+                        保存统计结果
+                      </Button>
+                    </Col>
+                    <Col>
+                      <Tooltip title="教程文档">
+                        <Icon type="question-circle" style={{ cursor: 'pointer', fontSize: '18px', marginRight: 10 }} />
+                      </Tooltip>
+                    </Col>
                   </Row>
 
 
@@ -460,7 +469,7 @@ export default class Index extends React.Component {
                   </Tabs>
                   <textarea
                     autosize={{ minRows: 3, maxRows: 5 }}
-                    height="120px"
+                    height="50px"
                     //ref="editorsql"
                     ref={
                       p => { this.codeDom = p }
@@ -527,9 +536,9 @@ export default class Index extends React.Component {
           </Layout>
         </div>
         {
-          page == 2 && 
-            <SaveResultView {...this.state} setData={this.setData} onSaveFun={this.onSaveFun}>
-            </SaveResultView>
+          page == 2 &&
+          <SaveResultView {...this.state} setData={this.setData} onSaveFun={this.onSaveFun}>
+          </SaveResultView>
         }
       </React.Fragment>
 
