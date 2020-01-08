@@ -44,11 +44,13 @@ class TreeView extends React.Component {
       fieldList = fieldList.map(({ fieldType1, fieldType2, ...a }, idx) => {
         if (idx == index) {
           return {
+            ...a,
             fieldType2: false,
             fieldType1: true
           }
         } else {
           return {
+            ...a,
             fieldType2,
             fieldType1: false
           }
