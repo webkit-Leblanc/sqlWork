@@ -41,10 +41,36 @@ class TreeView extends React.Component {
     console.log('索引:', index, 'key:', key, 'val:', val);
     let { fieldList } = this.props;
     if (key == 'fieldType1' && val) {
-      fieldList[index].fieldType2 = false;
+      fieldList = fieldList.map(({ fieldType2, fieldType2, ...a }, idx) => {
+        if (idx == index) {
+          return {
+            fieldType2: false,
+            fieldType1: true
+          }
+        } else {
+          return {
+            fieldType2,
+            fieldType1: false
+          }
+        }
+      })
+      // fieldList[index].fieldType2 = false;
     }
     if (key == 'fieldType2' && val) {
-      fieldList[index].fieldType1 = false;
+      // fieldList[index].fieldType1 = false;
+      fieldList = fieldList.map(({ fieldType2, fieldType2, ...a }, idx) => {
+        if (idx == index) {
+          return {
+            fieldType2: true,
+            fieldType1: false
+          }
+        } else {
+          return {
+            fieldType2: false,
+            fieldType1
+          }
+        }
+      })
     }
 
     fieldList[index] = {
@@ -154,50 +180,50 @@ class TreeView extends React.Component {
               <Form.Item label={<React.Fragment>统计结果表名<span style={{ color: 'red' }}>&nbsp;*</span></React.Fragment>}>
                 <Input onChange={(e) => { this.handleOnFormchange('factTableName', e.target.value) }} value={saveResultData.factTableName || ''} placeholder="**_statistics_res_table" />
               </Form.Item>
-                <Form.Item label={<React.Fragment>描述<span style={{ color: 'red' }}>&nbsp;*</span></React.Fragment>}>
-                  <Input onChange={(e) => { this.handleOnFormchange('factTableDesc', e.target.value) }} value={saveResultData.factTableDesc || ''} placeholder="请输入" />
-                </Form.Item>
-                <Form.Item label={<React.Fragment>图表类型<span style={{ color: 'red' }}>&nbsp;*</span></React.Fragment>}>
-                  <Select onChange={(v) => { this.handleOnFormchange('chartType', v) }} placeholder="请选择">
-                    {
-                      chartTypeList.map((item) => (
-                        <Option value={item.chartType} key={item.chartId}>{item.chartDesc}</Option>
-                      ))
-                    }
-                  </Select>
-                </Form.Item>
-                <Form.Item label="业务名">
-                  <Input onChange={(e) => { this.handleOnchange('systemName', e.target.value) }} disabled value={saveResultData.systemName || ''} />
-                </Form.Item>
-                <Form.Item label="子业务名">
-                  <Input onChange={(e) => { this.handleOnchange('businessName', e.target.value) }} disabled value={saveResultData.businessName} />
-                </Form.Item>
+              <Form.Item label={<React.Fragment>描述<span style={{ color: 'red' }}>&nbsp;*</span></React.Fragment>}>
+                <Input onChange={(e) => { this.handleOnFormchange('factTableDesc', e.target.value) }} value={saveResultData.factTableDesc || ''} placeholder="请输入" />
+              </Form.Item>
+              <Form.Item label={<React.Fragment>图表类型<span style={{ color: 'red' }}>&nbsp;*</span></React.Fragment>}>
+                <Select onChange={(v) => { this.handleOnFormchange('chartType', v) }} placeholder="请选择">
+                  {
+                    chartTypeList.map((item) => (
+                      <Option value={item.chartType} key={item.chartId}>{item.chartDesc}</Option>
+                    ))
+                  }
+                </Select>
+              </Form.Item>
+              <Form.Item label="业务名">
+                <Input onChange={(e) => { this.handleOnchange('systemName', e.target.value) }} disabled value={saveResultData.systemName || ''} />
+              </Form.Item>
+              <Form.Item label="子业务名">
+                <Input onChange={(e) => { this.handleOnchange('businessName', e.target.value) }} disabled value={saveResultData.businessName} />
+              </Form.Item>
 
-                <Table columns={columns} size="small" dataSource={fieldList} className="save-result-table" pagination={false} bordered />
+              <Table columns={columns} size="small" dataSource={fieldList} className="save-result-table" pagination={false} bordered />
 
-                <Row style={{ marginTop: 10 }} type="flex" gutter={20}>
-                  <Col>
-                    <Button type="primary" onClick={this.props.onSaveFun} loading={this.props.saveLoading}>保存</Button>
-                  </Col>
-                  <Col>
-                    <Button onClick={() => {
-                      this.props.setData({
-                        page: 1
-                      })
-                    }}>返回</Button>
-                  </Col>
+              <Row style={{ marginTop: 10 }} type="flex" gutter={20}>
+                <Col>
+                  <Button type="primary" onClick={this.props.onSaveFun} loading={this.props.saveLoading}>保存</Button>
+                </Col>
+                <Col>
+                  <Button onClick={() => {
+                    this.props.setData({
+                      page: 1
+                    })
+                  }}>返回</Button>
+                </Col>
 
-                </Row>
+              </Row>
             </Form>
 
           </div>
         </Card>
 
-          </div>
-          );
-        }
-      }
-      
-      export default TreeView;
-      
-      
+      </div>
+    );
+  }
+}
+
+export default TreeView;
+
+
