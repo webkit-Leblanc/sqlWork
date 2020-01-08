@@ -41,7 +41,7 @@ class TreeView extends React.Component {
     console.log('索引:', index, 'key:', key, 'val:', val);
     let { fieldList } = this.props;
     if (key == 'fieldType1' && val) {
-      fieldList = fieldList.map(({ fieldType2, fieldType2, ...a }, idx) => {
+      fieldList = fieldList.map(({ fieldType1, fieldType2, ...a }, idx) => {
         if (idx == index) {
           return {
             fieldType2: false,
@@ -58,7 +58,7 @@ class TreeView extends React.Component {
     }
     if (key == 'fieldType2' && val) {
       // fieldList[index].fieldType1 = false;
-      fieldList = fieldList.map(({ fieldType2, fieldType2, ...a }, idx) => {
+      fieldList = fieldList.map(({ fieldType1, fieldType2, ...a }, idx) => {
         if (idx == index) {
           return {
             fieldType2: true,
